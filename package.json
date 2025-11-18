@@ -1,0 +1,10 @@
+{
+    "name": "biblical-or-not",
+    "version": "1.0.0",
+    "description": "Chrome extension to check if tweets are biblical",
+    "scripts": {
+        "build": "node build-env.js"
+    },
+    "author": "",
+    "license": "ISC"
+}

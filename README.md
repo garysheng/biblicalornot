@@ -1,4 +1,4 @@
-# Biblical Or Not Chrome Extension
+# BiblicalOrNot Chrome Extension
 
 A Chrome extension that analyzes tweets on X (formerly Twitter) to determine if they align with biblical principles using Perplexity AI.
 
@@ -8,8 +8,11 @@ A Chrome extension that analyzes tweets on X (formerly Twitter) to determine if 
 - **AI Analysis**: Uses Perplexity's `sonar-pro` model to act as a biblical scholar.
 - **Instant Verdict**: Provides a "Biblical", "Not Biblical", "Mixed/Unclear", or "Unrelated/Neutral" verdict with a brief explanation.
 
-## Screenshots
+## Demo
 
+<img src="assets/demo.gif" width="600" />
+
+## Screenshots
 <img src="assets/1.png" width="600" />
 <br />
 <img src="assets/2.png" width="600" />
@@ -30,11 +33,20 @@ A Chrome extension that analyzes tweets on X (formerly Twitter) to determine if 
 
 ### API Key
 
-1.  Click the **Biblical Or Not** extension icon in your Chrome toolbar.
+### API Key
+
+You have two options:
+
+**Option 1: UI (Recommended for Users)**
+1.  Click the **BiblicalOrNot** extension icon in your Chrome toolbar.
 2.  Enter your **Perplexity API Key** in the input field.
 3.  Click **Save Key**.
 
-*You can get an API key from [perplexity.ai/account/api](https://perplexity.ai/account/api).*
+**Option 2: .env (Recommended for Developers)**
+1.  Create a `.env` file in the root directory (see `.env.example`).
+2.  Add your key: `PERPLEXITY_API_KEY=your_key_here`.
+3.  Run `npm run build` to generate the configuration file.
+4.  Reload the extension.
 
 ## Usage
 

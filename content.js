@@ -152,11 +152,15 @@ function showModal(tweetText) {
 
     modal.innerHTML = `
     <button class="biblical-close-btn">&times;</button>
-    <h2>Biblical Check</h2>
+    <h2>BiblicalOrNot</h2>
     <div class="biblical-tweet-preview">${tweetText.substring(0, 100)}${tweetText.length > 100 ? '...' : ''}</div>
     <div id="biblical-content" class="biblical-loading">
       <div class="biblical-spinner"></div>
       <p>Consulting the scriptures...</p>
+    </div>
+    <div class="biblical-footer">
+      <span style="margin-right: 5px;">Powered by</span>
+      <img src="${chrome.runtime.getURL('assets/Perplexity_AI_logo.png')}" alt="Perplexity AI" style="height: 16px; vertical-align: middle;">
     </div>
   `;
 
@@ -182,8 +186,46 @@ function updateModal(response) {
         contentDiv.innerHTML = `<p style="color: red;">Error: ${response.error}</p>`;
         contentDiv.className = 'biblical-result';
     } else {
-        let formattedText = response.result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // response.result is now an object { content, citations }
+        // But wait, the background script returns { result: { content, citations } } 
+        // OR did we change the background to return just the object?
+        // Let's check the background listener:
+        // sendResponse({ result: result }); -> result is the object returned by checkBiblical
+
+        const data = response.result;
+        let text = data.content || "";
+        const citations = data.citations || [];
+
+        // 1. Linkify Perplexity Citations [1], [2], etc.
+        // We replace [n] with <a href="citation_url" ...>[n]</a>
+        text = text.replace(/\[(\d+)\]/g, (match, number) => {
+            const index = parseInt(number) - 1;
+            if (citations[index]) {
+                return `<a href="${citations[index]}" target="_blank" class="biblical-citation">[${number}]</a>`;
+            }
+            return match;
+        });
+
+        // 2. Linkify Bible Verses
+        // Regex to match "Book Chapter:Verse" patterns
+        // e.g. John 3:16, 1 Corinthians 13:4-7, Gen 1:1
+        // This is a basic regex and might need tuning.
+        const bibleRegex = /\b((?:1|2|3|I|II|III)?\s*[A-Z][a-z]+)\s+(\d+):(\d+(?:-\d+)?)\b/g;
+
+        text = text.replace(bibleRegex, (match, book, chapter, verse) => {
+            // Construct Bible Gateway URL
+            // search=Book+Chapter:Verse&version=NIV
+            const searchQuery = `${book} ${chapter}:${verse}`;
+            const encodedQuery = encodeURIComponent(searchQuery);
+            const url = `https://www.biblegateway.com/passage/?search=${encodedQuery}&version=NIV`;
+            return `<a href="${url}" target="_blank" class="biblical-verse-link">${match}</a>`;
+        });
+
+        // 3. Formatting
+        let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        formattedText = formattedText.replace(/\*([^*]+)\*/g, '<em>$1</em>');
         formattedText = formattedText.replace(/\n/g, '<br>');
+
         contentDiv.innerHTML = formattedText;
         contentDiv.className = 'biblical-result';
     }

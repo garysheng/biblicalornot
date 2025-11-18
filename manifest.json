@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Biblical Or Not",
+    "name": "BiblicalOrNot",
     "version": "1.0",
     "description": "Click a tweet to check if it's biblical using Perplexity AI.",
     "permissions": [
@@ -32,5 +32,15 @@
     ],
     "action": {
         "default_popup": "popup.html"
-    }
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "assets/*.png"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
 }

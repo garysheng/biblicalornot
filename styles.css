@@ -94,3 +94,40 @@
     color: #657786;
     border-left: 3px solid #1da1f2;
 }
+
+/* Links */
+.biblical-citation {
+    color: #1da1f2;
+    text-decoration: none;
+    font-size: 0.8em;
+    vertical-align: super;
+    margin: 0 2px;
+}
+
+.biblical-citation:hover {
+    text-decoration: underline;
+}
+
+.biblical-verse-link {
+    color: #1da1f2;
+    text-decoration: none;
+    border-bottom: 1px dotted #1da1f2;
+}
+
+.biblical-verse-link:hover {
+    background-color: rgba(29, 161, 242, 0.1);
+}
+
+/* Footer */
+.biblical-footer {
+    margin-top: 15px;
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
