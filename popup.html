@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            width: 250px;
+            padding: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            text-align: center;
+            color: #333;
+        }
+
+        h3 {
+            margin-top: 0;
+            color: #1da1f2;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #1da1f2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0c85d0;
+        }
+
+        .status {
+            margin-top: 10px;
+            font-size: 12px;
+            min-height: 15px;
+        }
+
+        .instructions {
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+            text-align: left;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+    <h3>Biblical Or Not</h3>
+
+    <div>
+        <input type="password" id="apiKey" placeholder="Enter Perplexity API Key">
+        <button id="saveBtn">Save Key</button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <div class="instructions">
+        <p><strong>How to use:</strong></p>
+        <ol style="padding-left: 20px; margin: 5px 0;">
+            <li>Enter your API key above.</li>
+            <li>Go to X (Twitter).</li>
+            <li>Click the three dots (...) on any tweet.</li>
+            <li>Select "Check if Biblical".</li>
+        </ol>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

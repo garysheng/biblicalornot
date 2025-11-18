@@ -1,0 +1,36 @@
+{
+    "manifest_version": 3,
+    "name": "Biblical Or Not",
+    "version": "1.0",
+    "description": "Click a tweet to check if it's biblical using Perplexity AI.",
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+        "*://twitter.com/*",
+        "*://x.com/*",
+        "https://api.perplexity.ai/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://twitter.com/*",
+                "*://x.com/*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "css": [
+                "styles.css"
+            ]
+        }
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    }
+}
