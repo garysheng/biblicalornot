@@ -11,6 +11,8 @@
     "host_permissions": [
         "*://twitter.com/*",
         "*://x.com/*",
+        "*://substack.com/*",
+        "*://*.substack.com/*",
         "https://api.perplexity.ai/*"
     ],
     "background": {
@@ -20,7 +22,9 @@
         {
             "matches": [
                 "*://twitter.com/*",
-                "*://x.com/*"
+                "*://x.com/*",
+                "*://substack.com/*",
+                "*://*.substack.com/*"
             ],
             "js": [
                 "content.js"

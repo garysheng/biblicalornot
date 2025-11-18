@@ -1,10 +1,23 @@
-let currentTweet = null;
+let currentPost = null;
 
-// 1. Track which tweet's menu was clicked
+// 1. Track which post's menu was clicked
 document.addEventListener('click', (e) => {
-    const caret = e.target.closest('[data-testid="caret"]');
-    if (caret) {
-        currentTweet = caret.closest('article');
+    // Twitter
+    const twitterCaret = e.target.closest('[data-testid="caret"]');
+    if (twitterCaret) {
+        currentPost = twitterCaret.closest('article');
+        return;
+    }
+
+    // Substack
+    // Substack menu buttons often have the lucide-ellipsis class or are within a specific button structure
+    // Based on screenshot: button with svg.lucide-ellipsis
+    const substackMenuBtn = e.target.closest('button');
+    if (substackMenuBtn && substackMenuBtn.querySelector('.lucide-ellipsis')) {
+        // Find the closest post container. 
+        // Substack structure varies (Notes vs Articles). 
+        // Notes often have role="article" or class "feedItem-..."
+        currentPost = substackMenuBtn.closest('[role="article"]') || substackMenuBtn.closest('.feed-item') || substackMenuBtn.closest('.post-preview');
     }
 }, true);
 
@@ -27,96 +40,62 @@ const observer = new MutationObserver((mutations) => {
 observer.observe(document.body, { childList: true, subtree: true });
 
 function injectMenuItem(menu) {
-    // 1. Find an existing menu item to use as a template
-    // Twitter menu items usually have role="menuitem"
-    const existingItem = menu.querySelector('[role="menuitem"]');
+    // Prevent duplicate injection
+    if (menu.querySelector('.biblical-menu-item')) return;
 
+    // Determine if it's Twitter or Substack based on classes or structure
+    const isTwitter = menu.querySelector('[role="menuitem"]') && menu.innerHTML.includes('data-testid');
+    const isSubstack = menu.classList.contains('pencraft') || menu.querySelector('.pencraft');
+
+    if (isTwitter) {
+        injectTwitterMenuItem(menu);
+    } else if (isSubstack || menu.querySelector('button')) {
+        // Substack menus are often just a list of buttons in a div
+        injectSubstackMenuItem(menu);
+    }
+}
+
+function injectTwitterMenuItem(menu) {
+    const existingItem = menu.querySelector('[role="menuitem"]');
     if (!existingItem) return;
 
-    // Check if we already injected
     const parentContainer = existingItem.parentNode;
     if (parentContainer.querySelector('.biblical-menu-item')) return;
 
-    // 2. Clone the item
     const menuItem = existingItem.cloneNode(true);
     menuItem.classList.add('biblical-menu-item');
 
-    // 3. Update Text
-    // Walk through to find the text node. It's usually in a span.
-    // We'll look for the span that holds the text of the existing item.
-    const originalText = existingItem.innerText;
-
-    // Helper to find the text node/element
-    function replaceText(node, oldText, newText) {
-        if (node.nodeType === 3) { // Text node
-            if (node.nodeValue.trim().length > 0) {
-                node.nodeValue = newText;
-                return true;
-            }
-        }
-        if (node.nodeType === 1) { // Element
-            // If this element is the one containing the text
-            if (node.innerText === oldText) {
-                // If it's a leaf-ish node (no big structure), just replace text
-                // But safer to go deeper if possible. 
-                // Let's just try to find the specific span Twitter uses.
-                // Twitter usually puts text in a span with specific classes.
-                // Let's try a recursive search for the text node.
-            }
-
-            for (let child of node.childNodes) {
-                if (replaceText(child, oldText, newText)) return true;
-            }
-        }
-        return false;
-    }
-
-    // Simple approach: Find the span that contains the visible text
+    // Update Text
     const allSpans = menuItem.querySelectorAll('span');
     let textFound = false;
     for (const span of allSpans) {
         if (span.innerText && span.innerText.trim().length > 0) {
             span.innerText = 'Check if Biblical';
             textFound = true;
-            break; // Assume the first text span is the label
+            break;
         }
     }
 
-    // Fallback if no span found (unlikely)
     if (!textFound) {
         const textDiv = menuItem.querySelector('div[dir="ltr"]');
         if (textDiv) textDiv.innerText = 'Check if Biblical';
     }
 
-    // 4. Update Icon
+    // Update Icon
     const svg = menuItem.querySelector('svg');
     if (svg) {
-        // Use a simple book icon
         svg.innerHTML = '<path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>';
-        // Ensure color matches (usually inherited, but sometimes set on path)
-        const path = svg.querySelector('path');
-        if (path) {
-            // Remove specific color classes if any, or let it inherit
-            // Twitter usually uses 'currentcolor' or specific classes on the SVG
-        }
     }
 
-    // 5. Add Click Listener
     menuItem.addEventListener('click', (e) => {
-        // Close menu (simulated by clicking background or just hiding)
-        // Best to let the event bubble if possible, but we need to trigger our action
         e.preventDefault();
         e.stopPropagation();
-
-        // Hide menu manually since we intercepted the click
         menu.style.display = 'none';
-        // Or try to find the close button/overlay. 
-        // Actually, just hiding the menu container usually works for the user experience.
         const menuContainer = menu.closest('[role="group"]') || menu;
         if (menuContainer) menuContainer.style.display = 'none';
 
-        if (currentTweet) {
-            const text = extractTweetText(currentTweet);
+        if (currentPost) {
+            const text = extractPostText(currentPost);
             showModal(text);
             chrome.runtime.sendMessage({
                 action: "checkBiblical",
@@ -127,20 +106,112 @@ function injectMenuItem(menu) {
         }
     });
 
-    // 6. Insert
-    // Insert as the first item for visibility
     parentContainer.insertBefore(menuItem, parentContainer.firstChild);
 }
 
-function extractTweetText(tweetElement) {
-    const textNode = tweetElement.querySelector('[data-testid="tweetText"]');
-    if (textNode) {
-        return textNode.innerText;
+function injectSubstackMenuItem(menu) {
+    // Substack menu items are usually <button> elements with 'pencraft' classes
+    // We'll try to clone one
+    const existingItem = menu.querySelector('button');
+    if (!existingItem) return;
+
+    const menuItem = existingItem.cloneNode(true);
+    menuItem.classList.add('biblical-menu-item');
+
+    // Remove any ID to avoid duplicates
+    menuItem.removeAttribute('id');
+
+    // Helper to recursively find and replace text
+    function replaceText(node, newText) {
+        if (node.nodeType === 3 && node.nodeValue.trim()) { // Text node
+            node.nodeValue = newText;
+            return true;
+        }
+        let replaced = false;
+        for (let child of node.childNodes) {
+            if (replaceText(child, newText)) {
+                replaced = true;
+                // Don't break immediately if we want to replace all text, 
+                // but usually we just want the main label.
+                // Let's stop after first match to avoid wiping icons if they are text-based (unlikely)
+                return true;
+            }
+        }
+        return replaced;
     }
-    return tweetElement.innerText;
+
+    // Update Text
+    const textReplaced = replaceText(menuItem, 'Check if Biblical');
+
+    // Fallback if no text node found
+    if (!textReplaced) {
+        // Try to find a div/span and set innerText
+        const textContainer = menuItem.querySelector('div') || menuItem.querySelector('span');
+        if (textContainer) {
+            textContainer.innerText = 'Check if Biblical';
+        } else {
+            menuItem.innerText = 'Check if Biblical';
+        }
+    }
+
+    // Update Icon if present
+    const svg = menuItem.querySelector('svg');
+    if (svg) {
+        // Use book icon
+        svg.innerHTML = '<path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z" fill="currentColor"/>';
+        svg.setAttribute('viewBox', '0 0 24 24');
+    }
+
+    menuItem.addEventListener('click', (e) => {
+        // Substack menus usually close on click
+        const portal = menu.closest('[id^="headlessui-portal-root"]') || document.querySelector('[id^="headlessui-portal-root"]');
+        if (portal) {
+            // Try to find the backdrop or just hide the menu
+            menu.style.display = 'none';
+            // Ideally we trigger the native close, but hiding works for now
+        } else {
+            menu.style.display = 'none';
+        }
+
+        if (currentPost) {
+            const text = extractPostText(currentPost);
+            showModal(text);
+            chrome.runtime.sendMessage({
+                action: "checkBiblical",
+                text: text
+            }, (response) => {
+                updateModal(response);
+            });
+        }
+    });
+
+    // Insert inside the container that holds the other items, before the first button
+    existingItem.parentNode.insertBefore(menuItem, existingItem);
 }
 
-// --- Modal Logic (Same as before) ---
+function extractPostText(postElement) {
+    // Twitter
+    const tweetTextNode = postElement.querySelector('[data-testid="tweetText"]');
+    if (tweetTextNode) {
+        return tweetTextNode.innerText;
+    }
+
+    // Substack
+    // Substack posts/notes usually have a content div.
+    // For Notes: class="feedItem-..." -> div.pencraft...
+    // We can try to grab the main text content.
+    // Look for the body of the post.
+    const substackBody = postElement.querySelector('[class*="feedCommentBody"]') || postElement.querySelector('.post-preview-content') || postElement.querySelector('.pencraft.pc-display-flex.pc-flexDirection-column');
+
+    if (substackBody) {
+        return substackBody.innerText;
+    }
+
+    // Fallback
+    return postElement.innerText;
+}
+
+// --- Modal Logic ---
 
 function showModal(tweetText) {
     const overlay = document.createElement('div');
@@ -150,19 +221,30 @@ function showModal(tweetText) {
     const modal = document.createElement('div');
     modal.className = 'biblical-modal';
 
-    modal.innerHTML = `
-    <button class="biblical-close-btn">&times;</button>
-    <h2>BiblicalOrNot</h2>
-    <div class="biblical-tweet-preview">${tweetText.substring(0, 100)}${tweetText.length > 100 ? '...' : ''}</div>
-    <div id="biblical-content" class="biblical-loading">
-      <div class="biblical-spinner"></div>
-      <p>Consulting the scriptures...</p>
-    </div>
-    <div class="biblical-footer">
-      <span style="margin-right: 5px;">Powered by</span>
-      <img src="${chrome.runtime.getURL('assets/Perplexity_AI_logo.png')}" alt="Perplexity AI" style="height: 16px; vertical-align: middle;">
-    </div>
-  `;
+    let footerContent = '<span>Perplexity AI</span>';
+    try {
+        // Check for chrome.runtime.getURL support
+        if (typeof chrome !== 'undefined' && chrome && chrome.runtime && chrome.runtime.getURL) {
+            const logoUrl = chrome.runtime.getURL('assets/Perplexity_AI_logo.png');
+            footerContent = '<img src="' + logoUrl + '" alt="Perplexity AI" style="height: 16px; vertical-align: middle;">';
+        }
+    } catch (e) {
+        // Fallback already set
+    }
+
+    modal.innerHTML = [
+        '<button class="biblical-close-btn">&times;</button>',
+        '<h2>BiblicalOrNot</h2>',
+        '<div class="biblical-tweet-preview">' + tweetText.substring(0, 100) + (tweetText.length > 100 ? '...' : '') + '</div>',
+        '<div id="biblical-content" class="biblical-loading">',
+        '  <div class="biblical-spinner"></div>',
+        '  <p>Consulting the scriptures...</p>',
+        '</div>',
+        '<div class="biblical-footer">',
+        '  <span style="margin-right: 5px;">Powered by</span>',
+        '  ' + footerContent,
+        '</div>'
+    ].join('');
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
@@ -186,12 +268,6 @@ function updateModal(response) {
         contentDiv.innerHTML = `<p style="color: red;">Error: ${response.error}</p>`;
         contentDiv.className = 'biblical-result';
     } else {
-        // response.result is now an object { content, citations }
-        // But wait, the background script returns { result: { content, citations } } 
-        // OR did we change the background to return just the object?
-        // Let's check the background listener:
-        // sendResponse({ result: result }); -> result is the object returned by checkBiblical
-
         const data = response.result;
         let text = data.content || "";
         const citations = data.citations || [];

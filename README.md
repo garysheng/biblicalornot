@@ -1,10 +1,10 @@
 # BiblicalOrNot Chrome Extension
 
-A Chrome extension that analyzes tweets on X (formerly Twitter) to determine if they align with biblical principles using Perplexity AI.
+A Chrome extension that analyzes tweets on X (formerly Twitter) and posts on Substack to determine if they align with biblical principles using Perplexity AI.
 
 ## Features
 
-- **Seamless Integration**: Adds a "Check if Biblical" option directly to the tweet menu (three-dot menu).
+- **Seamless Integration**: Adds a "Check if Biblical" option directly to the tweet/post menu (three-dot menu) on X and Substack.
 - **AI Analysis**: Uses Perplexity's `sonar-pro` model to act as a biblical scholar.
 - **Instant Verdict**: Provides a "Biblical", "Not Biblical", "Mixed/Unclear", or "Unrelated/Neutral" verdict with a brief explanation.
 
@@ -50,9 +50,9 @@ You have two options:
 
 ## Usage
 
-1.  Go to [x.com](https://x.com).
-2.  Find a tweet you want to analyze.
-3.  Click the **three dots (...)** in the top right corner of the tweet.
+1.  Go to [x.com](https://x.com) or [substack.com](https://substack.com).
+2.  Find a tweet or post you want to analyze.
+3.  Click the **three dots (...)** menu on the post.
 4.  Select **Check if Biblical** from the menu.
 5.  A modal will appear with the analysis.
 
