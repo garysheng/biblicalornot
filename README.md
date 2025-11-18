@@ -31,11 +31,11 @@ A Chrome extension that analyzes tweets on X (formerly Twitter) and posts on Sub
 
 ## Configuration
 
-### API Key
+### Perplexity API Key Entry
 
-### API Key
+First, create a Perplexity API key at [Perplexity](https://perplexity.ai/account/api/keys). 
 
-You have two options:
+Then, you have two options:
 
 **Option 1: UI (Recommended for Users)**
 1.  Click the **BiblicalOrNot** extension icon in your Chrome toolbar.
